@@ -267,11 +267,11 @@
         gap: 10px;
       }
       .word-card {
-        min-height: 96px;
+        min-height: 128px;
         flex-direction: row;
         justify-content: flex-start;
-        gap: 10px;
-        padding: 12px;
+        gap: 14px;
+        padding: 16px;
         border-radius: 13px;
         text-align: left;
       }
@@ -280,8 +280,8 @@
         grid-column: 1 / -1;
         justify-self: center;
       }
-      .shape { width: 36px; height: 36px; }
-      .word { font-size: clamp(.94rem, 4vw, 1.1rem); }
+      .shape { width: 44px; height: 44px; }
+      .word { font-size: clamp(1.05rem, 4.5vw, 1.3rem); }
       .controls { flex-wrap: wrap; gap: 10px; }
       button { min-height: 48px; padding: 0 21px; }
     }
@@ -289,10 +289,10 @@
     @media (max-width: 380px) {
       body { padding-right: 10px; padding-left: 10px; }
       .cards { width: calc(100% - 16px); gap: 8px; }
-      .word-card { min-height: 88px; gap: 8px; padding: 9px; }
+      .word-card { min-height: 112px; gap: 10px; padding: 11px; }
       .word-card:last-child { width: calc(50% - 4px); }
-      .shape { width: 32px; height: 32px; }
-      .word { font-size: .94rem; }
+      .shape { width: 38px; height: 38px; }
+      .word { font-size: 1rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
