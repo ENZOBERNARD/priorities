@@ -86,9 +86,17 @@
       width: 176px;
       height: 218px;
       place-items: center;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
       transform: rotate(-4deg);
       transition: opacity .25s ease, transform .35s ease;
     }
+
+    .deck:hover { transform: rotate(-4deg) translateY(-4px); }
+    .deck:focus-visible { outline: 3px solid var(--blue); outline-offset: 8px; border-radius: 18px; }
 
     .deck-card {
       position: absolute;
@@ -127,19 +135,6 @@
       border-radius: 50%;
       background: linear-gradient(135deg, var(--blue) 0 20%, var(--red) 20% 40%, var(--yellow) 40% 60%, var(--green) 60% 80%, var(--orange) 80%);
       content: "";
-    }
-
-    .deck-hint {
-      position: absolute;
-      bottom: 18px;
-      left: 0;
-      width: 100%;
-      margin: 0;
-      color: #77746d;
-      font-size: .83rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
     }
 
     .cards {
@@ -224,6 +219,21 @@
       color: var(--ink);
     }
 
+    button.deck {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      box-shadow: none;
+      font-size: inherit;
+      font-weight: inherit;
+    }
+
+    button.deck:hover { transform: rotate(-4deg) translateY(-4px); box-shadow: none; }
+    button.deck:focus-visible { outline: 3px solid var(--blue); outline-offset: 8px; border-radius: 18px; }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -294,15 +304,14 @@
   <main>
     <p class="eyebrow">Un jeu pour choisir… et débattre</p>
     <h1>Priorités</h1>
-    <p class="intro">Piochez cinq propositions sans lien entre elles, puis classez-les selon vos priorités. À vous de décider ce qui compte le plus&nbsp;!</p>
+    <p class="intro" id="intro">À vous de décider ce qui compte le plus&nbsp;!</p>
 
     <section class="table" aria-label="Espace de tirage">
-      <div class="deck" id="deck" aria-hidden="true">
+      <button class="deck" id="deck" type="button" aria-label="Piocher cinq cartes">
         <div class="deck-card"></div>
         <div class="deck-card"></div>
         <div class="deck-card deck-face">Priorités</div>
-      </div>
-      <p class="deck-hint" id="deck-hint">Le paquet est prêt</p>
+      </button>
       <div class="cards" id="cards" aria-live="polite" aria-label="Propositions tirées" hidden></div>
     </section>
 
@@ -501,7 +510,7 @@ Un pacte de paix signé entre les rêves|Une serre où poussent des souvenirs`
 
     const cards = document.querySelector("#cards");
     const deck = document.querySelector("#deck");
-    const hint = document.querySelector("#deck-hint");
+    const intro = document.querySelector("#intro");
     const drawButton = document.querySelector("#draw-button");
     const newDrawButton = document.querySelector("#new-draw-button");
     const announcement = document.querySelector("#announcement");
@@ -534,13 +543,14 @@ Un pacte de paix signé entre les rêves|Une serre où poussent des souvenirs`
       });
 
       deck.hidden = true;
-      hint.hidden = true;
       cards.hidden = false;
       drawButton.hidden = true;
       newDrawButton.hidden = false;
+      intro.hidden = true;
       announcement.textContent = `Cinq propositions tirées : ${selection.join(", ")}.`;
     }
 
+    deck.addEventListener("click", drawFiveWords);
     drawButton.addEventListener("click", drawFiveWords);
     newDrawButton.addEventListener("click", drawFiveWords);
   </script>
