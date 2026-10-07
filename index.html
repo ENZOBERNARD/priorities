@@ -263,22 +263,20 @@
       .table { min-height: 280px; margin-top: 20px; border-radius: 22px; }
       .cards {
         width: calc(100% - 24px);
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         gap: 10px;
       }
       .word-card {
-        min-height: 128px;
+        min-height: 154px;
         flex-direction: row;
-        justify-content: flex-start;
-        gap: 14px;
+        justify-content: center;
+        gap: 12px;
         padding: 16px;
         border-radius: 13px;
         text-align: left;
       }
       .word-card:last-child {
-        width: calc(50% - 5px);
-        grid-column: 1 / -1;
-        justify-self: center;
+        width: 100%;
       }
       .shape { width: 44px; height: 44px; }
       .word { font-size: clamp(1.05rem, 4.5vw, 1.3rem); }
@@ -289,8 +287,7 @@
     @media (max-width: 380px) {
       body { padding-right: 10px; padding-left: 10px; }
       .cards { width: calc(100% - 16px); gap: 8px; }
-      .word-card { min-height: 112px; gap: 10px; padding: 11px; }
-      .word-card:last-child { width: calc(50% - 4px); }
+      .word-card { min-height: 142px; gap: 10px; padding: 11px; }
       .shape { width: 38px; height: 38px; }
       .word { font-size: 1rem; }
     }
