@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f2e9">
+  <title>Priorités — Le jeu des choix</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #24231f;
+      --muted: #77746d;
+      --paper: #f6f2e9;
+      --card: #fffdf8;
+      --blue: #4478db;
+      --red: #e35d52;
+      --yellow: #f2c84b;
+      --green: #4a9a69;
+      --orange: #ed9144;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px 20px 48px;
+      background:
+        radial-gradient(ellipse at 50% 44%, rgba(255,255,255,.9), transparent 48%),
+        var(--paper);
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(100%, 920px);
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.7rem, 8vw, 5rem);
+      font-weight: 700;
+      letter-spacing: -.065em;
+      line-height: .98;
+    }
+
+    .intro {
+      max-width: 510px;
+      margin: 18px auto 0;
+      color: #65615a;
+      font-size: clamp(.98rem, 2.5vw, 1.1rem);
+      line-height: 1.6;
+    }
+
+    .table {
+      position: relative;
+      display: grid;
+      min-height: 325px;
+      margin: 29px auto 23px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(65, 58, 43, .1);
+      border-radius: 28px;
+      background:
+        radial-gradient(ellipse at center, rgba(255,255,255,.85), rgba(255,255,255,.25) 68%),
+        #eae4d8;
+      box-shadow: inset 0 2px 8px rgba(61, 53, 39, .04);
+    }
+
+    .deck {
+      position: relative;
+      display: grid;
+      width: 176px;
+      height: 218px;
+      place-items: center;
+      transform: rotate(-4deg);
+      transition: opacity .25s ease, transform .35s ease;
+    }
+
+    .deck-card {
+      position: absolute;
+      width: 158px;
+      height: 204px;
+      border: 2px solid var(--ink);
+      border-radius: 15px;
+      background: var(--card);
+      box-shadow: 0 8px 0 rgba(36, 35, 31, .09);
+    }
+
+    .deck-card:nth-child(1) { transform: translate(-10px, 8px) rotate(-8deg); }
+    .deck-card:nth-child(2) { transform: translate(7px, 4px) rotate(6deg); }
+
+    .deck-face {
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      border: 2px solid var(--ink);
+      border-radius: 15px;
+      background: var(--card);
+      box-shadow: 0 8px 0 rgba(36, 35, 31, .09);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      transform: translateY(-3px);
+    }
+
+    .deck-face::before {
+      width: 55px;
+      height: 55px;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue) 0 20%, var(--red) 20% 40%, var(--yellow) 40% 60%, var(--green) 60% 80%, var(--orange) 80%);
+      content: "";
+    }
+
+    .deck-hint {
+      position: absolute;
+      bottom: 18px;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      color: #77746d;
+      font-size: .83rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .cards {
+      display: grid;
+      width: min(100% - 40px, 820px);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: clamp(8px, 2vw, 16px);
+      animation: deal .45s ease both;
+    }
+
+    .word-card {
+      display: flex;
+      min-height: 202px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 17px;
+      padding: 15px 8px;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: 0 6px 0 rgba(36, 35, 31, .12);
+      animation: pop .4s cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .word-card:nth-child(2) { animation-delay: .04s; }
+    .word-card:nth-child(3) { animation-delay: .08s; }
+    .word-card:nth-child(4) { animation-delay: .12s; }
+    .word-card:nth-child(5) { animation-delay: .16s; }
+
+    .shape {
+      display: block;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 auto;
+    }
+
+    .word {
+      overflow-wrap: anywhere;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(.9rem, 2.6vw, 1.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .color-blue .shape { color: var(--blue); }
+    .color-red .shape { color: var(--red); }
+    .color-yellow .shape { color: var(--yellow); }
+    .color-green .shape { color: var(--green); }
+    .color-orange .shape { color: var(--orange); }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    button {
+      min-height: 54px;
+      padding: 0 27px;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 0 rgba(36, 35, 31, .18);
+    }
+
+    button:active { transform: translateY(1px); box-shadow: none; }
+    button:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+
+    button.secondary {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 9px 17px;
+      margin: 24px 0 0;
+      padding: 0;
+      color: #65615a;
+      font-size: .83rem;
+      list-style: none;
+    }
+
+    .legend li { display: inline-flex; align-items: center; gap: 7px; }
+    .legend-swatch { width: 11px; height: 11px; border: 1px solid rgba(36,35,31,.3); }
+    .legend .color-blue { background: var(--blue); }
+    .legend .color-red { background: var(--red); }
+    .legend .color-yellow { background: var(--yellow); }
+    .legend .color-green { background: var(--green); }
+    .legend .color-orange { background: var(--orange); }
+
+    .source {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.5;
+    }
+
+    .source a { color: inherit; text-underline-offset: 3px; }
+    .source a:hover { color: var(--ink); }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes deal {
+      from { opacity: 0; transform: translateY(8px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(12px) rotate(-2deg); }
+      to { opacity: 1; transform: translateY(0) rotate(0); }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 28px 14px 36px; }
+      .table { min-height: 300px; margin-top: 24px; }
+      .cards { width: calc(100% - 20px); gap: 6px; }
+      .word-card { min-height: 148px; gap: 11px; padding: 10px 4px; border-radius: 12px; }
+      .shape { width: 34px; height: 34px; }
+      .controls { flex-wrap: wrap; }
+      button { min-height: 50px; padding: 0 21px; }
+    }
+
+    @media (max-width: 380px) {
+      .word-card { min-height: 130px; }
+      .word { font-size: .78rem; }
+      .shape { width: 29px; height: 29px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Un jeu pour choisir… et débattre</p>
+    <h1>Priorités</h1>
+    <p class="intro">Piochez cinq propositions sans lien entre elles, puis classez-les selon vos priorités. À vous de décider ce qui compte le plus&nbsp;!</p>
+
+    <section class="table" aria-label="Espace de tirage">
+      <div class="deck" id="deck" aria-hidden="true">
+        <div class="deck-card"></div>
+        <div class="deck-card"></div>
+        <div class="deck-card deck-face">Priorités</div>
+      </div>
+      <p class="deck-hint" id="deck-hint">Le paquet est prêt</p>
+      <div class="cards" id="cards" aria-live="polite" aria-label="Propositions tirées" hidden></div>
+    </section>
+
+    <div class="controls">
+      <button id="draw-button" type="button">Piocher 5 cartes</button>
+      <button id="new-draw-button" class="secondary" type="button" hidden>Recommencer</button>
+    </div>
+
+    <ul class="legend" aria-label="Code couleur des cartes">
+      <li><span class="legend-swatch color-blue"></span>Bleu</li>
+      <li><span class="legend-swatch color-red"></span>Rouge</li>
+      <li><span class="legend-swatch color-yellow"></span>Jaune</li>
+      <li><span class="legend-swatch color-green"></span>Vert</li>
+      <li><span class="legend-swatch color-orange"></span>Orange</li>
+    </ul>
+    <p class="source">500 propositions originales, inspirées des thèmes que vous avez décrits.</p>
+    <p class="sr-only" id="announcement" aria-live="polite"></p>
+  </main>
+
+  <script>
+    const wordGroups = [
+      `Pizza quatre fromages|Tarte aux pommes tiède|Chocolat noir|Fraises à la crème|Fromage fondu
+Croissant tout chaud|Frites croustillantes|Crêpes au sucre|Raclette entre amis|Glace à la vanille
+Pain frais avec du beurre|Pâtes carbonara|Sushi bien frais|Gâteau d'anniversaire|Pop-corn au cinéma
+Un bon café|Chocolat chaud en hiver|Limonade maison|Thé parfumé|Jus d'orange pressé
+Petit-déjeuner au lit|Brunch du dimanche|Dîner aux chandelles|Pique-nique au soleil|Repas partagé en famille
+Grasse matinée|Sieste dans un hamac|Bain moussant|Pyjama toute la journée|Rester sous la couette
+Chanter sous la douche|Danser dans le salon|Écouter sa chanson préférée|Lire au coin du feu|Regarder les étoiles
+Vacances à la mer|Week-end improvisé|Voyage en train|Balade en forêt|Journée sans obligations
+Massage après une longue journée|Câlin réconfortant|Rire jusqu'aux larmes|Recevoir une bonne nouvelle|Retrouver un vieil ami
+Faire la cuisine pour ses proches|Découvrir un nouveau restaurant|Manger avec les doigts|Un dessert en plus|Un goûter généreux
+Barbecue dans le jardin|Fondue au fromage|Crêpe au chocolat|Miel sur une tartine|Un bol de ramen fumant
+Un fruit parfaitement mûr|Une mangue bien juteuse|Une pastèque en été|Du fromage qui file|Une soupe faite maison
+Chaussettes toutes douces|Draps propres|Une douche bien chaude|Un fauteuil confortable|Une couverture toute chaude
+Flâner au marché|Faire la grasse matinée un jour de pluie|Prendre son temps le matin|Se promener sans destination|Admirer un coucher de soleil
+Apprendre un nouveau hobby|Réussir quelque chose du premier coup|Finir sa journée plus tôt|Avoir tout son temps|Ne rien avoir de prévu
+Une soirée jeux entre amis|Un karaoké improvisé|Un feu de camp|Un festival en plein air|Un bal costumé
+Des vacances sans réveil|Une chambre avec vue|Un bain dans une source chaude|Une nuit à la belle étoile|Une cabane dans les arbres
+Un livre qu'on ne peut pas lâcher|Une playlist parfaite|Un compliment inattendu|Un cadeau fait main|Une lettre manuscrite
+Faire du vélo au soleil|Nager dans une eau turquoise|Marcher dans la neige fraîche|Jouer dans les vagues|Pique-niquer au bord d'un lac
+La première gorgée de café|Le premier jour des vacances|Un fou rire contagieux|Retrouver ses clés tout de suite|Le dernier morceau de gâteau
+Des crêpes faites maison|Une pizza qui sort du four|Un chocolat qui fond en bouche|Des biscuits encore chauds|Une brioche du dimanche
+Un après-midi au spa|Une soirée sans téléphone|Une promenade avec son chien|Jardiner par beau temps|Peindre juste pour le plaisir
+Un bon livre d'occasion|Un bain de soleil|Une soirée à refaire le monde|S'endormir dans un hamac|Un repas qui dure des heures
+Un siège côté fenêtre|Une place au premier rang|Une journée à la campagne|Un massage des épaules|Un plateau-repas surprise
+Une dégustation de fromages|Une tournée de jeux d'arcade|Un dimanche en pyjama|Une promenade au bord de l'eau|La dernière chanson du concert
+Une soupe à l'oignon gratinée|Des raviolis faits maison|Un sandwich au fromage grillé|Une salade de fruits frais|Une gaufre encore tiède
+Du pain perdu au petit-déjeuner|Un curry parfumé|Une tarte salée sortie du four|Un bol de céréales à minuit|Une poignée de bonbons
+Un chocolat offert sans raison|Une table dressée pour les amis|Le bruit de la pluie depuis son lit|Une promenade après le dîner|Un bain de pieds relaxant
+Une journée à ne penser à rien|Un hamac à l'ombre|Une pâtisserie de la boulangerie|Un déjeuner en terrasse
+Un chocolat fourré au praliné|Des ravioles au beurre noisette|Un jus de pomme artisanal|Une brioche à partager|Une promenade dans un jardin fleuri
+Un après-midi à dessiner|Une soirée à écouter des vinyles|Des vacances dans un chalet|Un brunch avec vue
+Une promenade dans un village ancien|Une tarte aux fraises maison|Une soirée à contempler les étoiles`,
+      `Un film d'aventure|Une comédie romantique|Un film d'horreur|Un documentaire animalier|Une comédie française
+Une série à suspense|Un épisode de dessin animé|Un générique qu'on connaît par cœur|Un grand retournement de situation|Une fin heureuse
+Un concert de rock|Un concert de musique classique|Un festival de musique|Un groupe découvert par hasard|Une chanson qui reste en tête
+Un album qu'on écoute en boucle|Un vieux tube des années 80|Une chanson de karaoké|Un solo de guitare électrique|Un orchestre symphonique
+Un jeu vidéo coopératif|Un jeu de plateforme rétro|Un jeu de course|Une partie de jeu de société|Un tournoi de jeux vidéo
+Un niveau impossible à finir|Un personnage de jeu attachant|Une victoire à la dernière seconde|Un jeu de rôle fantastique|Une console de jeu vintage
+Un héros masqué|Un méchant très charismatique|Un robot qui a des sentiments|Un dragon gardien d'un trésor|Un détective excentrique
+Un magicien maladroit|Une princesse qui se sauve elle-même|Un extraterrestre gentil|Un fantôme qui a peur|Un pirate au grand cœur
+Une histoire de voyage dans le temps|Une aventure dans l'espace|Une école de sorciers|Une ville cachée sous la mer|Une chasse au trésor
+Un roman policier|Un roman de science-fiction|Une bande dessinée drôle|Un manga de sport|Un livre fantastique
+Un auteur qui surprend|Une saga en plusieurs tomes|Un livre avec une carte au début|Une histoire racontée à l'envers|Un narrateur pas fiable
+Un acteur qui fait rire|Une actrice dans un rôle inattendu|Un réalisateur visionnaire|Un duo comique|Une scène de cascade spectaculaire
+Un personnage secondaire inoubliable|Un méchant qui devient gentil|Un héros qui se trompe|Un costume de super-héros|Une réplique culte inventée
+Un concours de talents à la télévision|Un quiz télévisé|Une émission de cuisine|Un jeu télévisé en famille|Un concours de danse
+Une vidéo de chat qui tombe|Un mème absurde|Un filtre photo ridicule|Une vidéo devenue virale|Un commentaire plein d'esprit
+Un réseau social pour partager des photos|Un message vocal de trois minutes|Une discussion de groupe animée|Un profil mystérieux|Un pseudonyme improbable
+Une star qui répond à ses fans|Un influenceur passionné de jardinage|Un comédien d'improvisation|Un magicien de rue|Une danse devenue virale
+Une première de film|Un tapis rouge|Un cosplay fait maison|Une convention de bande dessinée|Une séance de dédicaces
+Une figurine de collection|Un poster de son film préféré|Une peluche de personnage|Un album de cartes à collectionner|Un vieux jeu d'arcade
+Un dessin animé du samedi matin|Une émission de marionnettes|Un film muet avec musique en direct|Un court métrage surprenant|Un générique de série mémorable
+Une chanson sans paroles|Une reprise meilleure que l'originale|Un morceau joué à la flûte|Un disque vinyle qui craque|Une chorale qui chante faux
+Un personnage qui parle aux animaux|Un enfant qui sauve le monde|Un savant un peu fou|Un monstre qui aime tricoter|Un roi qui déteste les couronnes
+Un monde où les animaux parlent|Une planète faite de bonbons|Un ascenseur vers la lune|Une porte vers une autre époque|Un train qui traverse les rêves
+Un spectacle de stand-up|Une pièce de théâtre comique|Un spectacle de magie|Un ballet contemporain|Un opéra avec des dragons
+Un podcast sur les mystères|Une émission de radio nocturne|Un livre audio raconté par un comédien|Une critique de film passionnée|Une théorie de fan improbable
+Un générique qu'on chante faux|Un spoiler évité de justesse|Une suite meilleure que le premier film|Un remake inattendu|Un épisode spécial de Noël
+Un groupe de musique masqué|Une héroïne venue du futur|Un film tourné en un seul plan|Un décor miniature incroyable|Un concours de costumes
+Un jeu de cartes fantastique|Une aventure narrative à choix|Un jeu de construction créatif|Un jeu de rythme endiablé|Un personnage qui brise le quatrième mur
+Un album de bande dessinée dédicacé|Une affiche de film vintage|Un roman adapté au cinéma|Une série tournée en plan-séquence|Une chanson composée pour un film
+Un artiste de rue talentueux|Une marionnette qui fait des imitations|Un festival de films insolites|Une émission sur les inventions|Un concours de sosies
+Un jeu télévisé avec des énigmes|Un documentaire sur les abysses|Une aventure en réalité virtuelle|Un court métrage sans dialogue
+Un album-concept racontant une histoire|Un duel de danse dans une comédie musicale`,
+      `Rater son bus de quelques secondes|Rester coincé dans les embouteillages|Marcher sur une brique de jeu|Renverser son café sur sa chemise|Oublier son parapluie
+Se faire réveiller trop tôt|Entendre une alarme qui n'est pas la sienne|Chercher ses clés partout|Faire tomber son téléphone|Casser le dernier œuf
+Attendre dans une file interminable|Être mis en attente au téléphone|Avoir une connexion internet lente|Un ordinateur qui redémarre tout seul|Une imprimante qui refuse d'imprimer
+Faire la vaisselle après un grand repas|Sortir les poubelles sous la pluie|Plier une montagne de linge|Nettoyer une casserole brûlée|Passer l'aspirateur quand on est fatigué
+Une chaussette qui disparaît|Un lacet qui se défait sans arrêt|Une étiquette qui gratte|Un pull qui pique|Une chaussure pleine de cailloux
+Un moustique dans la chambre|Une mouche qui tourne autour de la table|Une guêpe près de son verre|Une araignée dans la baignoire|Des fourmis dans le pique-nique
+La pluie le jour d'une sortie|Un vent qui retourne son parapluie|Une vague qui mouille son pantalon|De la neige dans ses chaussures|Une canicule sans ventilateur
+Un voisin qui perce un mur|Des travaux dès le matin|Une porte qui grince|Un robinet qui goutte toute la nuit|Un chien qui aboie à l'aube
+Le téléphone à 1 % de batterie|Un chargeur trop court|Des écouteurs emmêlés|Un câble qui ne fonctionne que d'un côté|Une télécommande introuvable
+Un mot sur le bout de la langue|Oublier pourquoi on est entré dans une pièce|Se tromper de jour pour un rendez-vous|Envoyer un message à la mauvaise personne|Oublier le nom de quelqu'un
+Faire tomber une tartine côté confiture|Une bouteille qui fuit dans le sac|Un yaourt qui explose à l'ouverture|Du dentifrice sur son vêtement|Une tache de sauce sur la nappe
+Un siège qui grince au cinéma|Quelqu'un qui parle pendant le film|Un écran trop lumineux dans le noir|Un spoiler entendu par hasard|La personne devant qui bloque la vue
+Un train annoncé avec du retard|Un ascenseur qui s'arrête à tous les étages|Rater une correspondance|Un taxi qui prend le mauvais chemin|Un siège du milieu en avion
+Un emballage impossible à ouvrir|Un sachet qui se déchire de travers|Un bocal impossible à dévisser|Du papier cadeau qui manque de deux centimètres|Un autocollant qui laisse de la colle
+Une chanson bloquée dans la tête|Un réveil qui sonne le dimanche|Une réunion qui aurait pu être un message|Une conversation qui n'en finit pas|Un silence gênant dans l'ascenseur
+Un stylo qui fuit dans la poche|Un crayon sans mine|Un document oublié à la maison|Un mot de passe qu'on vient de changer|Une faute de frappe dans un message important
+Une table bancale au restaurant|Une chaise trop basse|Une lumière qui clignote|Une pièce trop chauffée|Une pièce trop climatisée
+Une douche qui passe du chaud au froid|De l'eau froide quand on se savonne|Un shampoing presque vide|Une serviette encore humide|Un bouchon tombé dans le siphon
+Un colis livré chez le voisin|Un paquet qu'on attend toute la journée|Une livraison qui arrive quand on sort|Un carton trop grand pour son contenu|Un meuble à monter sans notice
+Une recette avec trop d'étapes|Un gâteau qui ne lève pas|Du riz collé au fond de la casserole|Une soupe trop salée|Un couvercle qui saute en cuisinant
+Une place de parking trop étroite|Un feu rouge à chaque carrefour|Un vélo qui déraille|Une roue de valise cassée|De la buée sur toutes les vitres
+Un lundi qui commence sous la pluie|Un rendez-vous déplacé à la dernière minute|Un programme annulé sans explication|Une journée qui n'avance pas|Avoir toujours froid aux mains
+Se cogner le petit orteil|Une écharde dans le doigt|Un papier qui coupe la peau|Une ampoule au talon|Une crampe en pleine nuit
+Un voisin qui tond pendant la sieste|Un haut-parleur dans les transports|Des notifications qui n'arrêtent pas|Une musique trop forte au restaurant|Un appel commercial au dîner
+Un parapluie qui goutte dans l'entrée|Des lunettes couvertes de buée|Des miettes dans le lit|Du sable dans les chaussures|Une manche trempée après s'être lavé les mains
+Un tiroir qui coince|Une porte qui se referme trop vite|Un bouton qui tombe juste avant de sortir|Une fermeture éclair bloquée|Une ampoule grillée le soir
+De la confiture sur les doigts|Une boisson renversée dans le sac|Une éclaboussure dans l'œil|Un grain de sable dans le pique-nique|De la poussière sur un meuble propre
+Une page web qui ne charge pas|Un fichier oublié en pièce jointe|Une visioconférence qui coupe|Un clavier en majuscules|Un écran tactile qui ne répond pas
+Une file d'attente qui n'avance pas|Un escalator en panne|Une porte automatique qui ne s'ouvre pas|Un distributeur qui garde la monnaie|Une sonnerie de téléphone dans une bibliothèque
+Un cintre qui casse|Un sac trop lourd à porter|Une boîte qui ne rentre pas dans le placard|Une table couverte de miettes|Une poignée collante
+Un bouton d'ascenseur qui ne marche pas|Un trottoir barré par des travaux|Une fermeture de manteau coincée|Un tiroir rempli de câbles emmêlés
+Une porte qui claque avec le courant d'air|Un pigeon qui picore à la fenêtre dès l'aube`,
+      `Les licornes|Les câlins|La télépathie|La célébrité|L'argent sans limite
+Le pouvoir de voler|L'invisibilité|Le voyage dans le temps|La téléportation|La vie éternelle
+Une journée de 30 heures|Une ville sans voitures|Un monde sans argent|Une maison qui se range seule|Un jardin sur la Lune
+Parler toutes les langues|Comprendre les animaux|Lire dans les pensées|Arrêter le temps|Se souvenir de tous ses rêves
+La chance insolente|Le destin|Le libre arbitre|Le courage|La nostalgie
+La beauté du hasard|Le premier contact extraterrestre|L'existence des fantômes|Les mondes parallèles|La vie sur Mars
+Une amitié entre un humain et un robot|Une intelligence artificielle poète|Un clone pour faire les corvées|Un double qui prend les décisions|Un robot qui raconte des blagues
+Un bouton pour effacer un souvenir|Une machine à réaliser les souhaits|Un miroir qui dit la vérité|Une carte qui montre les trésors|Une boussole qui indique le bonheur
+La célébrité pendant une journée|Être connu pour une invention|Avoir une statue à son effigie|Recevoir un prix étrange|Être applaudi en entrant dans une pièce
+La paix dans le monde|La fin des devoirs|Le droit à la sieste|Une semaine de quatre jours|Des vacances illimitées
+Un monde où personne ne ment|Un monde sans embouteillages|Un monde où tout le monde chante|Un monde sans devoirs ménagers|Un monde où les animaux votent
+La couleur préférée de tout le monde|Le son du silence|L'odeur de la pluie|Le goût d'un souvenir|Le poids d'une idée
+Une porte qui mène à son endroit préféré|Une île qui apparaît la nuit|Un nuage qu'on peut chevaucher|Une étoile à garder dans sa poche|Un océan dans une bouteille
+La télépathie entre meilleurs amis|Un langage secret universel|Un rêve partagé à plusieurs|Une ombre qui a sa propre vie|Un reflet qui fait coucou
+Être aimé de tout le monde|Ne jamais avoir peur|Ne plus jamais s'ennuyer|Toujours savoir quoi répondre|Pouvoir recommencer une journée
+La vérité absolue|Le bonheur parfait|La recette du succès|La formule de l'amitié|Le secret de l'univers
+Une bibliothèque infinie|Un musée des choses perdues|Une banque de temps|Un bureau des rêves|Une poste pour envoyer des souvenirs
+La possibilité de parler aux plantes|Un animal imaginaire comme compagnon|Un dragon de poche|Un phénix domestique|Une maison hantée très gentille
+Un chapeau qui donne confiance|Des chaussures qui trouvent le chemin|Une montre qui prédit les bonnes surprises|Un carnet qui répond aux questions|Une clé qui ouvre les portes imaginaires
+Le pouvoir de changer de taille|Pouvoir respirer sous l'eau|Marcher sur les nuages|Faire pousser des fleurs en chantant|Se transformer en animal
+Un anniversaire tous les mois|Une fête surprise chaque semaine|Un jour férié le mercredi|Un mois de vacances en hiver|Un réveillon en plein été
+Une conversation avec son soi du futur|Un conseil de son soi enfant|Un message envoyé dans le passé|Une lettre venue du futur|Une photo de demain
+La gentillesse contagieuse|Le rire contagieux|La créativité à volonté|Une mémoire partagée|Un sixième sens pour retrouver ses affaires
+Une planète réservée aux chats|Un hôtel pour voyageurs du temps|Un café pour personnages de contes|Un marché aux idées|Une école pour les super-pouvoirs
+Une potion pour oser|Un sort pour faire la vaisselle|Une formule pour retrouver les objets perdus|Un sortilège contre les cauchemars|Une baguette qui répare les objets
+Le bonheur des autres|La liberté de tout recommencer|Le droit de changer d'avis|La magie des petites choses|La possibilité de tout apprendre
+Une société sans frontières|Un dictionnaire des émotions|Une journée où chacun dit merci|La curiosité sans limites|La patience à volonté
+Un musée des inventions jamais faites|Une planète sans gravité|Un océan de nuages|Une montagne qui change de couleur|Un arc-en-ciel qu'on peut traverser
+Un rêve qu'on peut choisir|Un souvenir qu'on peut partager|Une idée qu'on peut offrir|Une pensée qui devient dessin|Une chanson qui raconte l'avenir
+Le pouvoir de réparer les cœurs|Une boussole vers ses amis|Une valise qui se remplit de souvenirs|Un parapluie contre les mauvaises idées|Une horloge qui ralentit les bons moments
+Un nuage qu'on peut mettre en bouteille|Une encyclopédie des mondes imaginaires|Un feu d'artifice silencieux|Une graine qui fait pousser des idées
+Un pacte de paix signé entre les rêves|Une serre où poussent des souvenirs`
+    ];
+    const stopWords = new Set(`
+      un une des du de la le les l d au aux en et ou qui que avec sans pour dans sur sous par
+      après avant tout toute tous toutes son sa ses leur leurs pas ne plus très trop quand comme
+      jusqu ce cette ces il elle on nous vous ils elles faire avoir être se est sont a été peut
+      bien bon bonne mauvais grande petit premier dernier autre même chaque quelque fait côté vers
+      chez depuis alors mais car donc or ni quatre tiède noir fondu chaud croustillantes parfumé
+      entre frais romantique animalier française heureuse symphonique impossible attachant inoubliable
+      comique culte virale mystérieux mystérieuse gentille incroyable électrique meilleures meilleure
+      donne trouvent prédit bonnes faciles heureux heureuse pleine court longue trop fort premier
+      domestique hantée répond ouvre changer réparée racontée perdue perdues devenir devenir
+      bande doigts années jusqu'aux début suite personne personne certaines certain certaines
+      pressé partagé grasse moussant préférée improvisé obligations longue réconfortant généreux
+      fumant parfaitement mûr juteuse faite douces confortable improvisée nouvelle vieil proches
+      découvrir nouveau manger chanter danser écouter lire regarder rester flâner prendre passer
+      réussir finir recevoir retrouver jouer rire sortir plier nettoyer tomber chercher oublier
+      attendre entendre envoyer casser marcher rater renverser se faire sortir entendre coincé
+      réveiller introuvable interminable lent lente brûlée disparaît défait grince goutte seule
+      sienne entré tromper parlé annoncé déplacé annulé bloqué impossible meilleure premier dernier
+      attachant fantastique vintage masqué charismatique gardien excentrique maladroit gentil cachée
+      drôle fiable plusieurs racontée surprend acteur actrice découvert connaît reste écoute vieux
+      dernière électrique coopératif rétro finir victoire heureuses grande tournée faite reçu connu
+      applaudi entrant réservée apparaît préférée partagé silencieux silencieuse curieuse insolente
+      éternelle illimitées ménagers préférée idéale parfaite étrange chantent votent ment réparée
+      parle parler comprendre lire arrêter souvenir effacer réaliser montre indique prend raconte
+      sauver sauverait dit devient raconte fait pousse traverser chevaucher change choisir offrir
+      envoyer recommencer apprendre voyager reprendre
+    `.split(/\s+/).filter(Boolean));
+    const popCultureExtras = [
+      "Astérix", "Obélix", "Tintin", "Titeuf", "Miraculous", "Ladybug", "Mbappé",
+      "Zidane", "Omar-Sy", "Stromae", "Angèle", "Orelsan", "Louane", "Jul",
+      "Mylène-Farmer", "Jean-Dujardin", "Kaamelott", "Fortnite", "Pokémon",
+      "Pikachu", "Zelda", "Mario", "Sonic", "Lupin", "Cyrano", "Molière",
+      "Koh-Lanta", "Fort-Boyard", "Top-Chef", "Disneyland"
+    ];
+    const words = [];
+    const usedWords = new Set();
+    const groupCounts = [0, 0, 0, 0];
+    wordGroups.forEach((group, groupIndex) => {
+      const entries = group.split(/[|\r\n]+/).map(word => word.trim()).filter(Boolean);
+      const source = groupIndex === 1 ? [...popCultureExtras, ...entries] : entries;
+      for (const token of source.flatMap(entry => entry.split(/\s+/))) {
+        const word = token.toLocaleLowerCase("fr")
+          .replace(/^(?:d'|l'|qu')/u, "")
+          .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, "");
+        if (word.length < 3 || stopWords.has(word) || usedWords.has(word) || groupCounts[groupIndex] >= 125) {
+          continue;
+        }
+        usedWords.add(word);
+        words.push({ group: groupIndex, value: word.charAt(0).toLocaleUpperCase("fr") + word.slice(1) });
+        groupCounts[groupIndex]++;
+      }
+    });
+    const wordPool = words.map(item => item.value);
+
+    const cards = document.querySelector("#cards");
+    const deck = document.querySelector("#deck");
+    const hint = document.querySelector("#deck-hint");
+    const drawButton = document.querySelector("#draw-button");
+    const newDrawButton = document.querySelector("#new-draw-button");
+    const announcement = document.querySelector("#announcement");
+
+    const designs = [
+      { color: "blue", label: "bleu, carré", svg: '<rect x="5" y="5" width="38" height="38" rx="3" fill="currentColor"/>' },
+      { color: "red", label: "rouge, triangle", svg: '<path d="M24 4 46 44H2L24 4Z" fill="currentColor"/>' },
+      { color: "yellow", label: "jaune, rond", svg: '<circle cx="24" cy="24" r="20" fill="currentColor"/>' },
+      { color: "green", label: "vert, étoile", svg: '<path d="m24 2 6.7 13.6 15 2.2-10.9 10.6 2.6 15L24 36.3 10.6 43.4l2.6-15L2.3 17.8l15-2.2L24 2Z" fill="currentColor"/>' },
+      { color: "orange", label: "orange, croix", svg: '<path d="M17 3h14v14h14v14H31v14H17V31H3V17h14V3Z" fill="currentColor"/>' }
+    ];
+
+    function drawFiveWords() {
+      const shuffled = [...wordPool];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+
+      const selection = shuffled.slice(0, 5);
+      cards.replaceChildren();
+      selection.forEach((word, index) => {
+        const design = designs[index];
+        const card = document.createElement("article");
+        card.className = `word-card color-${design.color}`;
+        card.setAttribute("aria-label", `${word}, ${design.label}`);
+        card.innerHTML = `<svg class="shape" viewBox="0 0 48 48" aria-hidden="true">${design.svg}</svg><span class="word"></span>`;
+        card.querySelector(".word").textContent = word;
+        cards.append(card);
+      });
+
+      deck.hidden = true;
+      hint.hidden = true;
+      cards.hidden = false;
+      drawButton.hidden = true;
+      newDrawButton.hidden = false;
+      announcement.textContent = `Cinq propositions tirées : ${selection.join(", ")}.`;
+    }
+
+    drawButton.addEventListener("click", drawFiveWords);
+    newDrawButton.addEventListener("click", drawFiveWords);
+  </script>
+</body>
+</html>
